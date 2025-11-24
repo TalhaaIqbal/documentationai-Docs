@@ -1,0 +1,272 @@
+---
+title: Examples
+description: Practical examples and use cases for Talha Iqbal Documentation
+---
+
+## Basic Document Creation
+
+Learn how to create and manage documents using the Talha Iqbal Documentation API. These examples demonstrate fundamental operations you'll use regularly.
+
+<Steps>
+  <Step title="Initialize Client" icon="code">
+    Set up your documentation client with proper authentication.
+    
+    ````javascript
+    const { DocumentationClient } = require('talha-iqbal-docs');
+    
+    const client = new DocumentationClient({
+      apiKey: process.env.DOCS_API_KEY,
+      baseURL: 'https://api.talha-iqbal-docs.com/v1'
+    });
+    ````
+  </Step>
+  <Step title="Create Document" icon="file-text">
+    Create a new document with metadata and content.
+    
+    ````javascript
+    const document = await client.documents.create({
+      title: 'API Integration Guide',
+      content: '# API Integration\n\nThis guide covers...',
+      tags: ['api', 'integration', 'guide'],
+      folder: 'api-documentation',
+      author: 'talha.iqbal',
+      status: 'draft'
+    });
+    
+    console.log('Created document:', document.id);
+    ````
+  </Step>
+  <Step title="Update Document" icon="edit">
+    Modify existing document content and metadata.
+    
+    ````javascript
+    const updated = await client.documents.update(document.id, {
+      content: '# API Integration\n\nThis updated guide covers...',
+      tags: ['api', 'integration', 'guide', 'updated'],
+      status: 'published'
+    });
+    
+    console.log('Updated document version:', updated.version);
+    ````
+  </Step>
+</Steps>
+
+## Advanced Queries
+
+<Tabs>
+  <Tab title="Search Documents" icon="search">
+    Perform complex searches across your documentation.
+    
+    ````javascript
+    // Search by content and tags
+    const searchResults = await client.documents.search({
+      query: 'authentication',
+      tags: ['security', 'api'],
+      folder: 'api-docs',
+      author: 'talha.iqbal',
+      status: 'published',
+      sortBy: 'updated_at',
+      sortOrder: 'desc',
+      limit: 20,
+      offset: 0
+    });
+    
+    console.log(`Found ${searchResults.total} documents`);
+    ````
+  </Tab>
+  <Tab title="Filter by Metadata" icon="filter">
+    Use metadata filters for precise document retrieval.
+    
+    ````javascript
+    // Filter by date range and status
+    const filteredDocs = await client.documents.list({
+      createdAfter: '2024-01-01',
+      createdBefore: '2024-12-31',
+      status: 'published',
+      tags: ['tutorial'],
+      folder: 'guides'
+    });
+    
+    console.log('Filtered documents:', filteredDocs.length);
+    ````
+  </Tab>
+</Tabs>
+
+<Callout kind="tip">Combine search queries with filters for more precise results.</Callout>
+
+## Folder Management
+
+<CodeGroup tabs="Create Folder,Move Documents">
+  ````javascript
+  // Create nested folder structure
+  const folder = await client.folders.create({
+    name: 'API Documentation',
+    parentId: null,
+    description: 'All API-related documentation',
+    permissions: {
+      read: ['team'],
+      write: ['developers'],
+      admin: ['leads']
+    }
+  });
+  
+  console.log('Created folder:', folder.id);
+  ````
+  ````javascript
+  // Move documents between folders
+  await client.documents.move(document.id, {
+    fromFolder: 'drafts',
+    toFolder: 'published-api-docs',
+    updateReferences: true
+  });
+  
+  console.log('Document moved successfully');
+  ````
+</CodeGroup>
+
+## Team Collaboration
+
+<Expandable title="Collaborative Editing" default-open="false">
+  Enable real-time collaborative editing for team documents.
+  
+  ````javascript
+  // Start collaborative session
+  const session = await client.collaboration.start({
+    documentId: document.id,
+    participants: ['user1@company.com', 'user2@company.com'],
+    permissions: 'edit',
+    duration: 3600 // 1 hour
+  });
+  
+  // Join session
+  const participant = await client.collaboration.join(session.id, {
+    userId: 'current-user',
+    cursor: { line: 10, column: 5 }
+  });
+  
+  // Send changes
+  await client.collaboration.update(session.id, {
+    changes: [
+      { type: 'insert', position: { line: 10, column: 5 }, text: 'New content' }
+    ],
+    userId: 'current-user'
+  });
+  ````
+</Expandable>
+
+## Integration Examples
+
+<ExpandableGroup>
+  <Expandable title="GitHub Integration" default-open="false">
+    Automatically sync documentation with GitHub repositories.
+    
+    ````javascript
+    const githubIntegration = await client.integrations.github.connect({
+      repository: 'company/docs',
+      branch: 'main',
+      path: 'docs/',
+      syncDirection: 'bidirectional',
+      autoCommit: true
+    });
+    
+    // Sync changes
+    await client.integrations.github.sync(githubIntegration.id);
+    ````
+  </Expandable>
+  <Expandable title="Slack Notifications" default-open="false">
+    Send notifications to Slack channels for documentation updates.
+    
+    ````javascript
+    const slackIntegration = await client.integrations.slack.connect({
+      webhookUrl: process.env.SLACK_WEBHOOK_URL,
+      channel: '#docs-updates',
+      events: ['document.created', 'document.updated', 'comment.added']
+    });
+    
+    // Test notification
+    await client.integrations.slack.test(slackIntegration.id, {
+      message: 'Test notification from Talha Iqbal Docs'
+    });
+    ````
+  </Expandable>
+  <Expandable title="Jira Integration" default-open="false">
+    Link documentation to Jira issues and projects.
+    
+    ````javascript
+    const jiraIntegration = await client.integrations.jira.connect({
+      baseUrl: 'https://company.atlassian.net',
+      username: process.env.JIRA_USERNAME,
+      apiToken: process.env.JIRA_API_TOKEN,
+      project: 'DOCS'
+    });
+    
+    // Create Jira issue from document
+    await client.integrations.jira.createIssue(jiraIntegration.id, {
+      summary: 'Review API documentation',
+      description: 'Please review the updated API docs',
+      documentId: document.id
+    });
+    ````
+  </Expandable>
+</ExpandableGroup>
+
+## Error Handling
+
+<CodeGroup tabs="Try-Catch,Async-Await">
+  ````javascript
+  // Comprehensive error handling
+  try {
+    const document = await client.documents.create({
+      title: 'Test Document',
+      content: 'Test content'
+    });
+  } catch (error) {
+    switch (error.code) {
+      case 'VALIDATION_ERROR':
+        console.error('Invalid document data:', error.details);
+        break;
+      case 'AUTHENTICATION_ERROR':
+        console.error('Authentication failed, check API key');
+        break;
+      case 'PERMISSION_DENIED':
+        console.error('Insufficient permissions for this operation');
+        break;
+      case 'RATE_LIMIT_EXCEEDED':
+        console.error('Rate limit exceeded, please wait');
+        break;
+      default:
+        console.error('Unknown error:', error.message);
+    }
+  }
+  ````
+  ````javascript
+  // Async error handling with promises
+  client.documents.create({
+    title: 'Test Document',
+    content: 'Test content'
+  })
+    .then(document => {
+      console.log('Document created:', document.id);
+    })
+    .catch(error => {
+      if (error.code === 'DUPLICATE_TITLE') {
+        console.error('Document with this title already exists');
+      } else {
+        console.error('Creation failed:', error.message);
+      }
+    });
+  ````
+</CodeGroup>
+
+<Callout kind="info">Always implement proper error handling to provide meaningful feedback to users.</Callout>
+
+## Performance Optimization
+
+| Technique | Code Example | Benefit |
+|-----------|--------------|---------|
+| Batch Operations | `client.documents.batchUpdate(updates)` | Reduce API calls |
+| Caching | `client.cache.enable({ ttl: 300 })` | Faster repeated requests |
+| Pagination | `client.documents.list({ limit: 50, offset: 100 })` | Handle large datasets |
+| Compression | `client.config.set({ compression: 'gzip' })` | Reduce bandwidth |
+
+These examples demonstrate the versatility and power of Talha Iqbal Documentation. Start with the basic operations and gradually incorporate advanced features as your needs grow.

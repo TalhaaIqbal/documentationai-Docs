@@ -1,0 +1,154 @@
+---
+title: Setup
+description: Step-by-step guide to setting up Talha Iqbal Documentation
+---
+
+## Prerequisites
+
+Before setting up Talha Iqbal Documentation, ensure you have the following requirements met. This will ensure a smooth installation and configuration process.
+
+<Callout kind="info">All prerequisites must be installed before proceeding with the setup.</Callout>
+
+<ParamField path="node" param-type="string" required="true">
+  Node.js version 16 or higher must be installed on your system.
+</ParamField>
+
+<ParamField path="npm" param-type="string" required="true">
+  NPM package manager should be available (comes with Node.js).
+</ParamField>
+
+<ParamField path="git" param-type="string" required="false">
+  Git for version control and cloning repositories.
+</ParamField>
+
+## Installation Steps
+
+<Steps>
+  <Step title="Clone Repository" icon="download">
+    Clone the Talha Iqbal Documentation repository to your local machine.
+    
+    ```bash
+    git clone https://github.com/talha-iqbal/documentation.git
+    cd documentation
+    ```
+  </Step>
+  <Step title="Install Dependencies" icon="package">
+    Install all required dependencies using npm.
+    
+    ```bash
+    npm install
+    ```
+  </Step>
+  <Step title="Configure Environment" icon="settings">
+    Create and configure your environment variables file.
+    
+    ```bash
+    cp .env.example .env
+    # Edit .env with your configuration
+    ```
+  </Step>
+  <Step title="Start Development Server" icon="play">
+    Launch the development server to verify installation.
+    
+    ```bash
+    npm run dev
+    ```
+  </Step>
+</Steps>
+
+## Configuration Options
+
+<Tabs>
+  <Tab title="Basic Config" icon="settings">
+    Configure essential settings for getting started.
+    
+    ```javascript
+    // config.js
+    module.exports = {
+      port: 3000,
+      database: {
+        host: 'localhost',
+        port: 5432,
+        name: 'documentation_db'
+      },
+      apiKey: process.env.API_KEY
+    };
+    ```
+  </Tab>
+  <Tab title="Advanced Config" icon="sliders">
+    Advanced configuration options for production deployment.
+    
+    ```javascript
+    // advanced-config.js
+    module.exports = {
+      security: {
+        jwtSecret: process.env.JWT_SECRET,
+        encryptionKey: process.env.ENCRYPTION_KEY
+      },
+      performance: {
+        cacheTimeout: 3600,
+        maxConnections: 100
+      }
+    };
+    ```
+  </Tab>
+</Tabs>
+
+## API Key Setup
+
+<CodeGroup tabs="Dashboard,CLI">
+  ````javascript
+  // Generate API key via dashboard
+  const apiKey = await fetch('/api/keys/generate', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer your-token',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      name: 'My Documentation Key',
+      permissions: ['read', 'write']
+    })
+  });
+  ````
+  ````bash
+  # Generate API key via CLI
+  documentation keys generate \
+    --name "My Documentation Key" \
+    --permissions read,write
+  ````
+</CodeGroup>
+
+<Callout kind="danger">Keep your API keys secure and never commit them to version control.</Callout>
+
+## Database Setup
+
+| Database | Version | Setup Command |
+|----------|---------|----------------|
+| PostgreSQL | 12+ | `createdb documentation_db` |
+| MySQL | 8.0+ | `CREATE DATABASE documentation_db;` |
+| SQLite | 3.0+ | Auto-created on first run |
+
+## Troubleshooting
+
+<ExpandableGroup>
+  <Expandable title="Installation Fails" default-open="false">
+    Check Node.js version and ensure all dependencies are available. Try clearing npm cache with `npm cache clean --force`.
+  </Expandable>
+  <Expandable title="Server Won't Start" default-open="false">
+    Verify port 3000 is available and environment variables are correctly set. Check logs for specific error messages.
+  </Expandable>
+  <Expandable title="Database Connection Issues" default-open="false">
+    Ensure database server is running and connection parameters are correct. Test connection with database client.
+  </Expandable>
+</ExpandableGroup>
+
+## Verification
+
+After setup, verify your installation by running the included test suite.
+
+```bash
+npm test
+```
+
+If all tests pass, your Talha Iqbal Documentation setup is complete and ready for use. You can now start creating and organizing your documentation projects.
